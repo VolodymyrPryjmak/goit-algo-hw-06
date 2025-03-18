@@ -13,6 +13,9 @@ def input_error(func):
         except ValueError:
             print(f" Неправильний формат номеру телефону  {field} {new_field} {func.__name__}")
             return 
+        finally:
+            if func.__name__ == "edit_phone":
+               print(f" Для коректування в {func.__name__} не знайдено номер {field}") 
     return inner
 
 class Field:
@@ -27,49 +30,38 @@ class Name(Field):
         super().__init__(name)
 
 class Phone(Field):
-    def __init__(self,phone):
+    def __init__(self,phone):  
+        if  not self.is_valid(phone):
+            raise ValueError
         super().__init__(phone)
-        self.is_valid = self.is_valid()
+        #self.is_valid = self.is_valid()
 
-    def is_valid(self):
-        if (len(self.value) != 10) or (self.value.isdigit() == False):
-           return False
-        else:
-            return True 
+    def is_valid(self,value):
+        return len(value) == 10 and value.isdigit()
 
 class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
-
+    
     @input_error
     def add_phone(self, phone):
-        if Phone(phone).is_valid == True:
-           self.phones.append(Phone(phone))
-        else:
-            raise ValueError()
+        self.phones.append(Phone(phone))
 
     def remove_phone(self, phone):
-        for el in self.phones: 
-            if str(el) == phone:
-               self.phones.remove(el) 
+        if self.find_phone(phone):
+           self.phones.remove(self.find_phone(phone)) 
 
     def find_phone(self, phone):
         for el in self.phones:
-            if str(el) == phone:
+            if el.value == phone:
                return el  
         return None    
     
     @input_error
     def edit_phone(self, phone, new_phone):
-        try:
-            old_phone = Record.find_phone(self,phone) 
-            if  Phone(new_phone).is_valid == True:
-                self.phones[self.phones.index(old_phone)] = new_phone
-            else:
-                raise ValueError()
-        except:
-            raise ValueError() 
+        if self.find_phone(phone):
+           self.phones[self.phones.index(self.find_phone(phone))] = Phone(new_phone)
         
     def __str__(self):
         return f"Contact name: {self.name}, phones: {'; '.join(str(p) for p in self.phones)}"
@@ -79,18 +71,11 @@ class AddressBook(UserDict):
     def add_record(self, record): 
         self.data[record.name.value] = record
 
-    def find(self, record_name):
-        for el in self.data:
-            if record_name == el:
-               el_phone = self.data.get(el)
-               return el_phone
-        return None
+    def find(self, record):
+        return self.data.get(record)
 
-    def delete(self, record):          
-        for el in self.data:
-            if record == el:
-               self.data.pop(el)
-               return 
+    def delete(self, record): 
+        self.data.pop(record)
         return  
 
     def __str__(self):
@@ -130,7 +115,7 @@ if __name__ == "__main__":
     found_phone = john.find_phone("5555555555")
     print(f"{john.name}:  {found_phone}")  # Виведення: John: 5555555555
 
-    john.remove_phone("7777777777")
+    john.remove_phone("5555555555")
 # Видалення запису Jane
     book.delete("Jane")
     print(book)
