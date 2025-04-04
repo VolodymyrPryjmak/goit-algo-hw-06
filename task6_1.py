@@ -1,23 +1,6 @@
 from collections import UserDict
 from functools import wraps
 
-def input_error(func):
-    @wraps(func)
-    def inner(self, field, new_field = ""):
-        try:
-            if func.__name__ == "add_phone":
-               return func(self, field)
-            elif func.__name__ == "edit_phone":    
-               return func(self, field, new_field)
-
-        except ValueError:
-            print(f" Неправильний формат номеру телефону  {field} {new_field} {func.__name__}")
-            return 
-        finally:
-            if func.__name__ == "edit_phone":
-               print(f" Для коректування в {func.__name__} не знайдено номер {field}") 
-    return inner
-
 class Field:
     def __init__(self, value):
         self.value = value
@@ -34,7 +17,6 @@ class Phone(Field):
         if  not self.is_valid(phone):
             raise ValueError
         super().__init__(phone)
-        #self.is_valid = self.is_valid()
 
     def is_valid(self,value):
         return len(value) == 10 and value.isdigit()
@@ -44,10 +26,12 @@ class Record:
         self.name = Name(name)
         self.phones = []
     
-    @input_error
     def add_phone(self, phone):
-        self.phones.append(Phone(phone))
-
+        try:
+            self.phones.append(Phone(phone))
+        except:
+            pass
+          
     def remove_phone(self, phone):
         if self.find_phone(phone):
            self.phones.remove(self.find_phone(phone)) 
@@ -58,11 +42,13 @@ class Record:
                return el  
         return None    
     
-    @input_error
     def edit_phone(self, phone, new_phone):
-        if self.find_phone(phone):
-           self.phones[self.phones.index(self.find_phone(phone))] = Phone(new_phone)
-        
+        try:
+            if self.find_phone(phone):
+               self.phones[self.phones.index(self.find_phone(phone))] = Phone(new_phone)
+        except:
+            pass
+
     def __str__(self):
         return f"Contact name: {self.name}, phones: {'; '.join(str(p) for p in self.phones)}"
 
@@ -95,7 +81,7 @@ if __name__ == "__main__":
     john_record = Record("John")
     john_record.add_phone("1234567890")
     john_record.add_phone("5555555555")
-    john_record.add_phone("7777777777")
+    john_record.add_phone("777777777u")
 # Додавання запису John до адресної 
     book.add_record(john_record)
 # Створення та додавання нового запису для Jane
