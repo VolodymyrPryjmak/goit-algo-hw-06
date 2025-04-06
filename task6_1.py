@@ -29,12 +29,14 @@ class Record:
     def add_phone(self, phone):
         try:
             self.phones.append(Phone(phone))
+            return True
         except:
-            pass
+            return False
           
     def remove_phone(self, phone):
-        if self.find_phone(phone):
-           self.phones.remove(self.find_phone(phone)) 
+        phone_obj = self.find_phone(phone)
+        if phone_obj:
+            self.phones.remove(phone_obj) 
 
     def find_phone(self, phone):
         for el in self.phones:
@@ -45,7 +47,9 @@ class Record:
     def edit_phone(self, phone, new_phone):
         try:
             if self.find_phone(phone):
-               self.phones[self.phones.index(self.find_phone(phone))] = Phone(new_phone)
+               if self.add_phone(new_phone) == True:
+                  self.remove_phone(phone) 
+               #self.phones[self.phones.index(self.find_phone(phone))] = Phone(new_phone)
         except:
             pass
 
@@ -57,11 +61,11 @@ class AddressBook(UserDict):
     def add_record(self, record): 
         self.data[record.name.value] = record
 
-    def find(self, record):
-        return self.data.get(record)
+    def find(self, name):
+        return self.data.get(name)
 
-    def delete(self, record): 
-        self.data.pop(record)
+    def delete(self, name): 
+        self.data.pop(name)
         return  
 
     def __str__(self):
@@ -94,6 +98,7 @@ if __name__ == "__main__":
     print(book)
 
     john = book.find("John")
+    #print(f" book  {john}")
     john_record.edit_phone("1234567890", "1112223333")
     print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
 
